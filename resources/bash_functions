@@ -1,0 +1,64 @@
+####
+## ~/.bash_functions
+## Useful bash functions.
+## Loaded by ~/.bashrc
+####
+
+## Iteration and repeat functions ##
+
+function loop() {
+	if [ $# -lt 1 ] || [ $# -gt 2 ] ; then
+		echo 'Error: loop: Wrong number of arguments.'
+		echo '  Usage: loop COMMAND-TO-REPEAT [ INTERVAL-IN-SECONDS ]'
+		return
+	fi
+	_8e95fdc5_command="$1"
+	_8e95fdc5_interval="1"
+	[ $# -eq 2 ] && _8e95fdc5_interval="$2"
+	while true ; do ${_8e95fdc5_command} ; sleep ${_8e95fdc5_interval}s ; done
+}
+
+## ps -related ##
+
+function ps-x() {
+	if [ $# -lt 1 ] || [ $# -gt 2 ] ; then
+		echo 'Error: ps-x: Wrong number of arguments.'
+		echo '  Usage: ps-x SEARCHED-WORD [ LINE-WIDTH ]'
+		return
+	fi
+	_8fea462b_word="$1"
+	_8fea462b_width=180
+	[ $# -ge 2 ] && _8fea462b_width=$2
+
+	ps -A --headers \
+		--format ruser,pid,ppid,pri,%cpu,%mem,etime,stat,tname,args \
+		--sort +ruser,+args,+pid \
+		--width ${_8fea462b_width} |grep --color=auto "${_8fea462b_word}"
+}
+
+function ps-user() {
+	if [ $# -gt 2 ] ; then
+		echo 'Error: ps-user: Wrong number of arguments.'
+		echo '  Usage: ps-user [ USER [ LINE-WIDTH ] ]'
+		return
+	fi
+	_0987b923_user="$(whoami)"
+	[ $# -ge 1 ] && _0987b923_user="$1"
+	_0987b923_width=180
+	[ $# -ge 2 ] && _0987b923_width=$2
+
+	ps --User ${_0987b923_user} --headers \
+		--format pid,ppid,pri,%cpu,%mem,etime,stat,tname,args \
+		--sort +args,+pid \
+		--width ${_0987b923_width}
+}
+
+## UUID -related ##
+
+function uu() {
+	uuidgen | xargs echo -n | xclip -selection clipboard
+}
+
+function uu8() {
+	uuidgen | sed 's/\([a-zA-Z0-9]*\)-.*/\1/' | xargs echo -n | xclip -selection clipboard
+}

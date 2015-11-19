@@ -1,0 +1,18 @@
+####
+## ~/.bash_aliases
+## Useful aliases and command shortcuts.
+## Loaded by ~/.bashrc
+####
+
+## More "ls" aliases ##
+
+alias ll='ls -lhF --group-directories-first'
+alias llr='ls -lhFR --group-directories-first'
+alias lla='ls -lA'
+alias la='ls -A'
+
+## Safety aliases ##
+
+alias rm='rm -i'
+alias mv='mv -i'
+alias cp='cp -i'

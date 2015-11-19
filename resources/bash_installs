@@ -1,0 +1,9 @@
+####
+## ~/.bash_installs
+## Looks for *.bashrc files in ~/opt/ and sources them.
+## Loaded by ~/.bashrc
+####
+
+for i in `find ~/opt -type f -name "*.bashrc"` ; do
+	. ${i}
+done

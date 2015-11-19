@@ -1,0 +1,16 @@
+[alias]
+	l = log --oneline --color --graph --decorate=short
+	ll = log --oneline --color --graph --decorate=no
+	s = status
+	ss = status -s
+	p = pull --ff-only
+	f = fetch --all --prune
+	last = diff --stat HEAD^..HEAD
+[color]
+	ui = true
+[color "status"]
+	untracked = blue
+	added = green
+	changed = red
+[push]
+	default = simple
