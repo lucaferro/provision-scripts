@@ -8,7 +8,7 @@
 
 alias ll='ls -lhF --group-directories-first'
 alias llr='ls -lhFR --group-directories-first'
-alias lla='ls -lA'
+alias lla='ls -lA --group-directories-first'
 alias la='ls -A'
 
 ## Safety aliases ##
