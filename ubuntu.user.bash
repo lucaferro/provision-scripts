@@ -110,6 +110,10 @@ function prv_extract() {
 ##                 PKG_VERSION
 ##                 [ BASHRC_CUSTOM_PRE [ BASHRC_CUSTOM_POST ] ]
 ##
+## It creates a file named PKG_NAME-PKG_VERSION.bashrc (or PKG_NAME only, if
+## PKG_VERSION is empty) under the temporary folder /tmp/PKG_NAME-PKG_VERSION
+## (still PKG_NAME only, if PKG_VERSION is empty).
+##
 ## Example:
 ## prv_dump_bashrc "eclipse-cpp" \
 ##                 "4.4.2-luna" \
@@ -123,25 +127,31 @@ function prv_dump_bashrc() {
 
 	PKG_NAME="$1"
 	PKG_VERSION="$2"
+	PKG_NAME_VER="${PKG_NAME}-${PKG_VERSION}"
+	[ -z "$PKG_VERSION" ] && PKG_NAME_VER="${PKG_NAME}"
 	PKG_ID="$(uuidgen | sed 's/\([a-zA-Z0-9]*\)-.*/\1/' | xargs echo -n)"
 	BASHRC_CUSTOM_PRE=""
 	[ $# -gt 2 ] && BASHRC_CUSTOM_PRE="$3"
 	BASHRC_CUSTOM_POST=""
 	[ $# -gt 3 ] && BASHRC_CUSTOM_POST="$4"
 
-	echo "> dumping bashrc for ${PKG_NAME}-${PKG_VERSION}" && \
-		cd /tmp/${PKG_NAME}-${PKG_VERSION} && \
-		echo '' > ${PKG_NAME}-${PKG_VERSION}.bashrc && \
-		echo 'if [ -z "${PKG_'"${PKG_ID}"'}" ] || [ "${PKG_'"${PKG_ID}"'}" == "0" ]' >> ${PKG_NAME}-${PKG_VERSION}.bashrc && \
-		echo 'then' >> ${PKG_NAME}-${PKG_VERSION}.bashrc && \
-		echo "${BASHRC_CUSTOM_PRE}" >> ${PKG_NAME}-${PKG_VERSION}.bashrc && \
-		echo 'export '"${PKG_NAME}"'_VERSION_='"${PKG_VERSION}" >> ${PKG_NAME}-${PKG_VERSION}.bashrc && \
-		echo 'export '"${PKG_NAME}"'_HOME=${HOME}/opt/'"${PKG_NAME}"'-${'"${PKG_NAME}"'_VERSION_}' >> ${PKG_NAME}-${PKG_VERSION}.bashrc && \
-		echo 'export PATH=${PATH}:${'"${PKG_NAME}"'_HOME}/bin' >> ${PKG_NAME}-${PKG_VERSION}.bashrc && \
-		echo "${BASHRC_CUSTOM_POST}" >> ${PKG_NAME}-${PKG_VERSION}.bashrc && \
-		echo 'fi' >> ${PKG_NAME}-${PKG_VERSION}.bashrc && \
-		echo 'export PKG_'"${PKG_ID}"'="1"' >> ${PKG_NAME}-${PKG_VERSION}.bashrc && \
-		echo '' >> ${PKG_NAME}-${PKG_VERSION}.bashrc
+	BASHRC_CUSTOM_HOME='export '"${PKG_NAME}"'_HOME=${HOME}/opt/'"${PKG_NAME}"'-${'"${PKG_NAME}"'_VERSION_}'
+	[ -z "$PKG_VERSION" ] && BASHRC_CUSTOM_HOME='export '"${PKG_NAME}"'_HOME=${HOME}/opt/'"${PKG_NAME}"''
+
+	echo "> dumping bashrc for ${PKG_NAME_VER}" && \
+		mkdir -p /tmp/${PKG_NAME_VER} && \
+		cd /tmp/${PKG_NAME_VER} && \
+		echo '' > ${PKG_NAME_VER}.bashrc && \
+		echo 'if [ -z "${PKG_'"${PKG_ID}"'}" ] || [ "${PKG_'"${PKG_ID}"'}" == "0" ]' >> ${PKG_NAME_VER}.bashrc && \
+		echo 'then' >> ${PKG_NAME_VER}.bashrc && \
+		echo "${BASHRC_CUSTOM_PRE}" >> ${PKG_NAME_VER}.bashrc && \
+		echo 'export '"${PKG_NAME}"'_VERSION_='"${PKG_VERSION}" >> ${PKG_NAME_VER}.bashrc && \
+		echo "$BASHRC_CUSTOM_HOME" >> ${PKG_NAME_VER}.bashrc && \
+		echo 'export PATH=${PATH}:${'"${PKG_NAME}"'_HOME}/bin' >> ${PKG_NAME_VER}.bashrc && \
+		echo "${BASHRC_CUSTOM_POST}" >> ${PKG_NAME_VER}.bashrc && \
+		echo 'fi' >> ${PKG_NAME_VER}.bashrc && \
+		echo 'export PKG_'"${PKG_ID}"'="1"' >> ${PKG_NAME_VER}.bashrc && \
+		echo '' >> ${PKG_NAME_VER}.bashrc
 	[ $? -ne 0 ] && echo "> ERROR" && exit 4
 }
 
@@ -169,7 +179,7 @@ function prv_deploy() {
 		mv out/* ${PKG_HOME}
 	[ $? -ne 0 ] && echo "> ERROR" && exit 5
 	if [ -f "${PKG_NAME}-${PKG_VERSION}.bashrc" ] ; then
-		mv ${PKG_NAME}-${PKG_VERSION}.bashrc ${HOME}/opt &&
+		mv ${PKG_NAME}-${PKG_VERSION}.bashrc ${HOME}/opt && \
 			. ${HOME}/opt/${PKG_NAME}-${PKG_VERSION}.bashrc
 		[ $? -ne 0 ] && echo "> ERROR" && exit 5
 	fi
@@ -225,7 +235,7 @@ uname -m |grep "64"
 ARCH_32="$?"
 [ "${ARCH_32}" != "0" ] && [ "${ARCH_32}" != "1" ] && echo "> ERROR" && exit 1
 
-echo "> creating ${HOME}/opt directory"
+echo "> creating ${HOME}/opt"
 mkdir -p "${HOME}/opt"
 [ $? -ne 0 ] && echo "> ERROR" && exit 1
 
